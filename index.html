@@ -300,6 +300,10 @@ function moveNo(){
     noBtn.disabled = true;
     noBtn.style.display = "none";
   });
+  window.addEventListener("resize", () => {
+  if(noHasFlownYet) moveNo();
+});
+
 </script>
 
 </body>
