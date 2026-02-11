@@ -227,39 +227,37 @@
     pleaIndex++;
   }
 
-  function moveNo(){
-    // First time: convert No into a flying button (fixed position)
-    if(!noHasFlownYet){
-      noHasFlownYet = true;
-      noBtn.style.position = "fixed";
-      noBtn.style.zIndex = "5";
-    }
-
-    const padding = 12;
-    const bw = noBtn.offsetWidth;
-    const bh = noBtn.offsetHeight;
-
-    const x = Math.random() * (innerWidth - bw - padding*2) + padding;
-    const y = Math.random() * (innerHeight - bh - padding*2) + padding;
-
-    noBtn.style.left = x + "px";
-    noBtn.style.top  = y + "px";
-
-    yesScale = Math.min(yesScale + 0.18, 2.8);
-    yesBtn.style.transform = `scale(${yesScale})`;
-
-    playFlySound();
-    showPlea();
+function moveNo(){
+  // First time: convert No into a flying button (fixed position)
+  if(!noHasFlownYet){
+    noHasFlownYet = true;
+    noBtn.style.position = "fixed";
+    noBtn.style.zIndex = "9999";     // extra-safe: always on top
   }
 
-  // Let them SEE No next to Yes first.
-  // Only when they TRY to press No, it flies away.
-  ["mouseenter","pointerdown","touchstart","focus"].forEach(evt => {
-    noBtn.addEventListener(evt, (e) => {
-      e.preventDefault();
-      moveNo();
-    }, { passive:false });
-  });
+  const padding = 12;
+
+  // Measure the button each time (more reliable on mobile)
+  const bw = noBtn.getBoundingClientRect().width;
+  const bh = noBtn.getBoundingClientRect().height;
+
+  // Make sure the random range NEVER becomes negative
+  const maxX = Math.max(padding, window.innerWidth  - bw - padding);
+  const maxY = Math.max(padding, window.innerHeight - bh - padding);
+
+  const x = padding + Math.random() * (maxX - padding);
+  const y = padding + Math.random() * (maxY - padding);
+
+  noBtn.style.left = x + "px";
+  noBtn.style.top  = y + "px";
+
+  yesScale = Math.min(yesScale + 0.18, 2.8);
+  yesBtn.style.transform = `scale(${yesScale})`;
+
+  playFlySound();
+  showPlea();
+}
+
 
   function heartBurst(cx, cy){
     for(let i=0;i<26;i++){
