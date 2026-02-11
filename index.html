@@ -141,7 +141,7 @@
     #no{
       background: #ffffff;
       color:#333;
-      position:relative;                 /* ← key: side-by-side at start */
+      position:relative;                 /* ← side-by-side at start */
       border: 1px solid rgba(0,0,0,.10);
       padding-left: 52px;                /* space for wings */
       padding-right: 26px;
@@ -260,15 +260,159 @@
     let pleaIndex = 0;
     const pleaText = document.getElementById("pleaText");
 
+    let typingTimer = null;
     function typeText(text){
+      if(typingTimer) clearInterval(typingTimer);
       pleaText.textContent = "";
       let i = 0;
-      const t = setInterval(() => {
+      typingTimer = setInterval(() => {
         pleaText.textContent += text[i++];
-        if(i >= text.length) clearInterval(t);
+        if(i >= text.length){
+          clearInterval(typingTimer);
+          typingTimer = null;
+        }
       }, 32);
     }
 
     function showNextPlea(){
       // restart bounce
+      pleaText.style.animation = "none";
+      void pleaText.offsetWidth;
+      pleaText.style.animation = "bounce .4s ease";
+
+      const msg = pleaMessages[Math.min(pleaIndex, pleaMessages.length - 1)];
+      typeText(msg);
+      pleaIndex++;
+    }
+
+    // ---------- Buttons logic ----------
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+    const msg = document.getElementById("msg");
+
+    let yesScale = 1;
+    let noHasFlownYet = false;
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function moveNoButton(){
+      // On first escape, detach from row and start flying around screen
+      if(!noHasFlownYet){
+        noHasFlownYet = true;
+        noBtn.style.position = "fixed";
+        noBtn.style.zIndex = "9999";
+        noBtn.style.transform = "translate(0,0)";
+      }
+
+      const padding = 12;
+
+      // accurate sizing (mobile-safe)
+      const rect = noBtn.getBoundingClientRect();
+      const bw = rect.width;
+      const bh = rect.height;
+
+      // clamp range so it never goes off-screen
+      const maxX = Math.max(padding, window.innerWidth  - bw - padding);
+      const maxY = Math.max(padding, window.innerHeight - bh - padding);
+
+      const x = padding + Math.random() * (maxX - padding);
+      const y = padding + Math.random() * (maxY - padding);
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+
+      // grow YES
+      yesScale = clamp(yesScale + 0.16, 1, 2.8);
+      yesBtn.style.transform = `scale(${yesScale})`;
+      yesBtn.style.boxShadow = `0 14px 26px rgba(255, 77, 136, ${clamp(0.18 + yesScale*0.08, 0.18, 0.48)})`;
+
+      playFlySound();
+      showNextPlea();
+    }
+
+    // Bulletproof: No escapes on ANY attempt (works on iPhone/Android + laptops)
+    function escapeNo(e){
+      e.preventDefault();
+      moveNoButton();
+    }
+    noBtn.addEventListener("pointerenter", escapeNo);
+    noBtn.addEventListener("pointerdown", escapeNo);
+    noBtn.addEventListener("click", escapeNo);
+
+    // keep it visible after resize/rotation
+    window.addEventListener("resize", () => {
+      if(noHasFlownYet) moveNoButton();
+    });
+
+    // ---------- Heart explosion on YES ----------
+    function burstHearts(cx, cy){
+      const count = 26;
+      for(let i=0;i<count;i++){
+        const p = document.createElement("div");
+        p.className = "burst";
+
+        const size = 10 + Math.random()*14;
+        p.style.width = size+"px";
+        p.style.height = size+"px";
+        p.style.left = cx + "px";
+        p.style.top = cy + "px";
+        p.style.transform = "translate(-50%,-50%)";
+        p.style.opacity = "1";
+
+        p.style.backgroundImage =
+          "url('data:image/svg+xml;utf8," +
+          encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ff4d88"><path d="M12 21s-7.2-4.7-9.6-9.1C.4 8.3 2.1 5 5.6 5c2 0 3.4 1.1 4.4 2.3C11 6.1 12.4 5 14.4 5 17.9 5 19.6 8.3 21.6 11.9 19.2 16.3 12 21 12 21z"/></svg>`) +
+          "')";
+        p.style.backgroundSize = "contain";
+        p.style.backgroundRepeat = "no-repeat";
+
+        document.body.appendChild(p);
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 80 + Math.random()*140;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+
+        const rotate = (Math.random()*240 - 120);
+        const duration = 700 + Math.random()*400;
+
+        const start = performance.now();
+
+        function animate(t){
+          const k = clamp((t - start)/duration, 0, 1);
+          const ease = 1 - Math.pow(1 - k, 3);
+
+          const x = cx + dx * ease;
+          const y = cy + dy * ease + (k*k*60);
+
+          p.style.left = x + "px";
+          p.style.top = y + "px";
+          p.style.opacity = String(1 - k);
+          p.style.transform = `translate(-50%,-50%) rotate(${rotate*ease}deg) scale(${1 - k*0.15})`;
+
+          if(k < 1) requestAnimationFrame(animate);
+          else p.remove();
+        }
+        requestAnimationFrame(animate);
+      }
+    }
+
+    yesBtn.addEventListener("click", () => {
+      const r = yesBtn.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+
+      burstHearts(cx, cy);
+
+      msg.style.display = "block";
+      yesBtn.disabled = true;
+      noBtn.disabled = true;
+
+      yesBtn.style.filter = "brightness(1.05)";
+      yesBtn.textContent = "Yay! 💖";
+      noBtn.style.display = "none";
+    });
+  </script>
+</body>
+</html>
 
