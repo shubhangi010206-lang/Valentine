@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Valentine?</title>
   <style>
     :root{
@@ -13,7 +13,6 @@
       --pink:#ff4d88;
       --pink2:#ff77a8;
       --shadow: 0 20px 60px rgba(0,0,0,.12);
-      --deep:#b1004a;
     }
     *{box-sizing:border-box}
     body{
@@ -29,7 +28,7 @@
       color:var(--text);
     }
 
-    /* floating background hearts */
+    /* floating hearts */
     .heart{
       position:absolute;
       width:14px; height:14px;
@@ -38,7 +37,6 @@
       animation: floatUp linear infinite;
       background: var(--pink);
       border-radius: 2px;
-      pointer-events:none;
     }
     .heart:before, .heart:after{
       content:"";
@@ -56,11 +54,11 @@
     }
 
     .card{
-      width:min(680px, 92vw);
-      padding:34px 26px 26px;
+      width:min(560px, 92vw);
+      padding:28px 24px 22px;
       background: var(--card);
       border: 1px solid rgba(255,255,255,.7);
-      border-radius: 28px;
+      border-radius: 24px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
       text-align:center;
@@ -70,38 +68,13 @@
 
     h1{
       margin:0 0 10px;
-      font-size: clamp(30px, 4vw, 44px);
+      font-size: clamp(26px, 3.5vw, 36px);
       letter-spacing: .2px;
     }
-
-    /* pink “think carefully” pill */
-    .hintPill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      margin: 6px auto 16px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-weight: 850;
+    p{
+      margin:0 0 18px;
+      opacity:.85;
       font-size: 15px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--pink), var(--pink2));
-      box-shadow: 0 12px 24px rgba(255, 77, 136, .25);
-    }
-
-    /* plea text (typewriter) */
-    #pleaText{
-      min-height: 28px;
-      margin: 0 0 18px;
-      font-weight: 850;
-      font-size: 18px;
-      color: var(--deep);
-      animation: bounce .4s ease;
-    }
-    @keyframes bounce{
-      0%{transform:scale(.88)}
-      60%{transform:scale(1.12)}
-      100%{transform:scale(1)}
     }
 
     .btnRow{
@@ -116,36 +89,34 @@
     button{
       border:none;
       cursor:pointer;
-      padding: 16px 22px;
+      padding: 14px 22px;
       border-radius: 999px;
-      font-weight: 900;
-      font-size: 17px;
-      box-shadow: 0 12px 24px rgba(0,0,0,.14);
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.12);
       transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
       user-select:none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      min-width: 160px; /* keep yes/no same size */
     }
 
     #yes{
       background: linear-gradient(135deg, var(--pink), var(--pink2));
       color:white;
       transform: scale(1);
-      position:relative;
-      z-index:3;
     }
     #yes:hover{ transform: scale(1.05); }
 
-    /* START: No sits beside Yes (relative), then JS turns it fixed when it flies */
+    /* No button becomes absolute so it can fly around */
     #no{
       background: #ffffff;
       color:#333;
-      position:relative;                 /* ← side-by-side at start */
-      border: 1px solid rgba(0,0,0,.10);
-      padding-left: 52px;                /* space for wings */
+      position:absolute;
+      left:50%;
+      top: 62%;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(0,0,0,.08);
+      padding-left: 50px; /* space for wings */
       padding-right: 26px;
-      z-index:3;
     }
 
     /* cute wings */
@@ -161,24 +132,29 @@
     #no .wing.left{ left:14px; transform: translateY(-50%) rotate(-10deg); }
     #no .wing.right{ left:30px; transform: translateY(-50%) rotate(10deg) scaleX(-1); }
 
+    /* little wiggle when it moves */
+    .fly{
+      animation: wiggle .22s ease-in-out 2;
+    }
+    @keyframes wiggle{
+      0%{ transform: translate(-50%, -50%) rotate(0deg); }
+      40%{ transform: translate(-50%, -50%) rotate(8deg); }
+      70%{ transform: translate(-50%, -50%) rotate(-6deg); }
+      100%{ transform: translate(-50%, -50%) rotate(0deg); }
+    }
+
     .message{
-      margin-top: 14px;
-      font-size: 19px;
-      font-weight: 950;
-      color: var(--deep);
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: 750;
+      color: #b1004a;
       display:none;
     }
 
-    /* burst particles */
-    .burst{
-      position:fixed;
-      left:0; top:0;
-      width:12px; height:12px;
-      pointer-events:none;
-      z-index:999;
-      will-change: transform, opacity;
-      background-size: contain;
-      background-repeat: no-repeat;
+    /* hide the original row space so only buttons show nicely */
+    .btnRowPlaceholder{
+      height: 78px; /* keeps layout stable while #no is absolute */
+      position:relative;
     }
   </style>
 </head>
@@ -203,13 +179,13 @@
 
   <div class="card" id="card">
     <h1>Will you be my Valentine? 💘</h1>
-    <div class="hintPill">Think carefully 😌</div>
+    <p>Choose wisely 😌</p>
 
-    <div id="pleaText"></div>
-
-    <!-- YES + NO side-by-side at start -->
-    <div class="btnRow">
-      <button id="yes" aria-label="Yes">Yes</button>
+    <!-- placeholder row (Yes sits in normal flow, No flies absolutely) -->
+    <div class="btnRowPlaceholder">
+      <div class="btnRow">
+        <button id="yes" aria-label="Yes">Yes</button>
+      </div>
 
       <button id="no" aria-label="No">
         <svg class="wing left" viewBox="0 0 24 16" fill="none">
@@ -226,185 +202,78 @@
   </div>
 
   <script>
-    // ---------- Sound (generated beep so no file needed) ----------
-    let audioCtx = null;
-    function playFlySound(){
-      try{
-        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const ctx = audioCtx;
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-
-        o.type = "triangle";
-        o.frequency.setValueAtTime(640, ctx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(980, ctx.currentTime + 0.08);
-
-        g.gain.setValueAtTime(0.0001, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
-
-        o.connect(g); g.connect(ctx.destination);
-        o.start();
-        o.stop(ctx.currentTime + 0.14);
-      }catch(e){}
-    }
-
-    // ---------- Plea messages with typewriter ----------
-    const pleaMessages = [
-      "I will buy you a chocolate 🍫",
-      "I will buy you a teddy 🧸",
-      "I will take you to a movie 🎬",
-      "🥺",
-      "pretty please……"
-    ];
-    let pleaIndex = 0;
-    const pleaText = document.getElementById("pleaText");
-
-    let typingTimer = null;
-    function typeText(text){
-      if(typingTimer) clearInterval(typingTimer);
-      pleaText.textContent = "";
-      let i = 0;
-      typingTimer = setInterval(() => {
-        pleaText.textContent += text[i++];
-        if(i >= text.length){
-          clearInterval(typingTimer);
-          typingTimer = null;
-        }
-      }, 32);
-    }
-
-    function showNextPlea(){
-      // restart bounce
-      pleaText.style.animation = "none";
-      void pleaText.offsetWidth;
-      pleaText.style.animation = "bounce .4s ease";
-
-      const msg = pleaMessages[Math.min(pleaIndex, pleaMessages.length - 1)];
-      typeText(msg);
-      pleaIndex++;
-    }
-
-    // ---------- Buttons logic ----------
     const noBtn = document.getElementById("no");
     const yesBtn = document.getElementById("yes");
     const msg = document.getElementById("msg");
+    const card = document.getElementById("card");
 
     let yesScale = 1;
-    let noHasFlownYet = false;
 
     function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
     function moveNoButton(){
-      // On first escape, detach from row and start flying around screen
-      if(!noHasFlownYet){
-        noHasFlownYet = true;
-        noBtn.style.position = "fixed";
-        noBtn.style.zIndex = "9999";
-        noBtn.style.transform = "translate(0,0)";
-      }
+      const padding = 14;
 
-      const padding = 12;
+      // viewport size
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
 
-      // accurate sizing (mobile-safe)
       const rect = noBtn.getBoundingClientRect();
       const bw = rect.width;
       const bh = rect.height;
 
-      // clamp range so it never goes off-screen
-      const maxX = Math.max(padding, window.innerWidth  - bw - padding);
-      const maxY = Math.max(padding, window.innerHeight - bh - padding);
+      // keep it away from edges
+      const x = Math.random() * (vw - bw - padding*2) + padding;
+      const y = Math.random() * (vh - bh - padding*2) + padding;
 
-      const x = padding + Math.random() * (maxX - padding);
-      const y = padding + Math.random() * (maxY - padding);
-
+      // Set absolute position using left/top in px and remove translate centering
+      // We'll use left/top directly.
       noBtn.style.left = x + "px";
-      noBtn.style.top  = y + "px";
+      noBtn.style.top = y + "px";
+      noBtn.style.transform = "translate(0, 0)";
 
-      // grow YES
-      yesScale = clamp(yesScale + 0.16, 1, 2.8);
+      noBtn.classList.remove("fly");
+      // reflow for restart animation
+      void noBtn.offsetWidth;
+      noBtn.classList.add("fly");
+
+      // grow YES each escape
+      yesScale = clamp(yesScale + 0.15, 1, 2.6);
       yesBtn.style.transform = `scale(${yesScale})`;
-      yesBtn.style.boxShadow = `0 14px 26px rgba(255, 77, 136, ${clamp(0.18 + yesScale*0.08, 0.18, 0.48)})`;
-
-      playFlySound();
-      showNextPlea();
+      yesBtn.style.boxShadow = `0 14px 26px rgba(255, 77, 136, ${clamp(0.18 + yesScale*0.08, 0.18, 0.45)})`;
     }
 
-    // Bulletproof: No escapes on ANY attempt (works on iPhone/Android + laptops)
-    function escapeNo(e){
-      e.preventDefault();
-      moveNoButton();
+    // Start position: center-ish inside card
+    function resetNoToCard(){
+      const cardRect = card.getBoundingClientRect();
+      noBtn.style.left = (cardRect.left + cardRect.width/2 - noBtn.offsetWidth/2) + "px";
+      noBtn.style.top = (cardRect.top + cardRect.height*0.62) + "px";
+      noBtn.style.transform = "translate(0,0)";
     }
-    noBtn.addEventListener("pointerenter", escapeNo);
-    noBtn.addEventListener("pointerdown", escapeNo);
-    noBtn.addEventListener("click", escapeNo);
 
-    // keep it visible after resize/rotation
+    window.addEventListener("load", () => {
+      resetNoToCard();
+    });
     window.addEventListener("resize", () => {
-      if(noHasFlownYet) moveNoButton();
+      // keep it on screen after resize
+      const rect = noBtn.getBoundingClientRect();
+      const onScreen =
+        rect.left >= 0 && rect.top >= 0 &&
+        rect.right <= window.innerWidth &&
+        rect.bottom <= window.innerHeight;
+      if(!onScreen) moveNoButton();
     });
 
-    // ---------- Heart explosion on YES ----------
-    function burstHearts(cx, cy){
-      const count = 26;
-      for(let i=0;i<count;i++){
-        const p = document.createElement("div");
-        p.className = "burst";
-
-        const size = 10 + Math.random()*14;
-        p.style.width = size+"px";
-        p.style.height = size+"px";
-        p.style.left = cx + "px";
-        p.style.top = cy + "px";
-        p.style.transform = "translate(-50%,-50%)";
-        p.style.opacity = "1";
-
-        p.style.backgroundImage =
-          "url('data:image/svg+xml;utf8," +
-          encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ff4d88"><path d="M12 21s-7.2-4.7-9.6-9.1C.4 8.3 2.1 5 5.6 5c2 0 3.4 1.1 4.4 2.3C11 6.1 12.4 5 14.4 5 17.9 5 19.6 8.3 21.6 11.9 19.2 16.3 12 21 12 21z"/></svg>`) +
-          "')";
-        p.style.backgroundSize = "contain";
-        p.style.backgroundRepeat = "no-repeat";
-
-        document.body.appendChild(p);
-
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 80 + Math.random()*140;
-        const dx = Math.cos(angle) * distance;
-        const dy = Math.sin(angle) * distance;
-
-        const rotate = (Math.random()*240 - 120);
-        const duration = 700 + Math.random()*400;
-
-        const start = performance.now();
-
-        function animate(t){
-          const k = clamp((t - start)/duration, 0, 1);
-          const ease = 1 - Math.pow(1 - k, 3);
-
-          const x = cx + dx * ease;
-          const y = cy + dy * ease + (k*k*60);
-
-          p.style.left = x + "px";
-          p.style.top = y + "px";
-          p.style.opacity = String(1 - k);
-          p.style.transform = `translate(-50%,-50%) rotate(${rotate*ease}deg) scale(${1 - k*0.15})`;
-
-          if(k < 1) requestAnimationFrame(animate);
-          else p.remove();
-        }
-        requestAnimationFrame(animate);
-      }
-    }
+    // Make it fly on hover and on tap (mobile)
+    noBtn.addEventListener("mouseenter", moveNoButton);
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNoButton();
+    }, {passive:false});
 
     yesBtn.addEventListener("click", () => {
-      const r = yesBtn.getBoundingClientRect();
-      const cx = r.left + r.width/2;
-      const cy = r.top + r.height/2;
-
-      burstHearts(cx, cy);
-
       msg.style.display = "block";
+      // disable buttons after success
       yesBtn.disabled = true;
       noBtn.disabled = true;
 
@@ -415,4 +284,5 @@
   </script>
 </body>
 </html>
+
 
